@@ -4,13 +4,6 @@
     padding: 0;
 }
 
-html,
-body
-{
-    height: 100vh;
-    font-family: 'Poppins';
-}
-
 .webgl
 {
     position: fixed;
