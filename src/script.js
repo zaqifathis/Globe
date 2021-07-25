@@ -32,9 +32,6 @@ for (let i = 0; i < particlesCount; i++) {
 
 particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3))
 
-particlesGeo.velocity = 0
-particlesGeo.acceleration = 0.02
-
 console.log(particlesGeo.attributes.position.array)
 
 const particleMat = new THREE.PointsMaterial({
@@ -85,15 +82,15 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 renderer.setClearColor(new THREE.Color("rgb(15, 22, 26)"))
 
 //Mouse
-// document.addEventListener('mousemove', animateParticles)
+document.addEventListener('mousemove', animateParticles)
 
-// let mouseX = 0
-// let mouseY = 0
+let mouseX = 0
+let mouseY = 0
 
-// function animateParticles(event) {
-//     mouseY = event.clientY
-//     mouseX = event.clientX
-// }
+function animateParticles(event) {
+    mouseY = event.clientY
+    mouseX = event.clientX
+}
 
 // Animation
 const clock = new THREE.Clock()
@@ -105,8 +102,8 @@ const animate = () => {
     // Update objects
     sphere.rotation.y = .15 * elapsedTime
 
-    // particlesMesh.rotation.y = .1 * elapsedTime
-    // particlesMesh.rotation.x = mouseY * (elapsedTime * 0.0005)
+    particlesMesh.rotation.y = .05 * elapsedTime
+    particlesMesh.rotation.x = mouseY * (elapsedTime * 0.00009)
 
     // Render
     renderer.render(scene, camera)
