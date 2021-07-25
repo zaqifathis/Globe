@@ -4,7 +4,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import * as dat from 'dat.gui'
 
 // Debug
-//const gui = new dat.GUI()
+const gui = new dat.GUI()
 
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
@@ -26,20 +26,23 @@ const particlesCount = 6000
 
 const posArray = new Float32Array(particlesCount * 3)
 
+
 for (let i = 0; i < particlesCount; i++) {
     posArray[i] = (Math.random() - 0.5) * 50
 }
 
 particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3))
 
-console.log(particlesGeo.attributes.position.array)
+console.log(particlesGeo.attributes.position.array.length)
+console.log(particlesGeo.attributes)
 
 const particleMat = new THREE.PointsMaterial({
-    size: 0.008
+    size: 0.01
 })
 
 const particlesMesh = new THREE.Points(particlesGeo, particleMat)
 scene.add(particlesMesh)
+
 
 
 // Update Sizes
@@ -75,7 +78,9 @@ controls.enableDamping = true
 
 // Renderer
 const renderer = new THREE.WebGLRenderer({
-    canvas: canvas
+    canvas: canvas,
+    alpha: true,
+    antialias: true
 })
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
@@ -102,8 +107,16 @@ const animate = () => {
     // Update objects
     sphere.rotation.y = .15 * elapsedTime
 
-    particlesMesh.rotation.y = .05 * elapsedTime
-    particlesMesh.rotation.x = mouseY * (elapsedTime * 0.00009)
+    particlesMesh.position.z = .2 * elapsedTime
+
+    // for (let i = 0; i < particlesMesh.position.count; i++) {
+    //     if (particlesMesh[i].position.z > 3) {
+    //         particlesMesh[i].position.z = 0
+    //     }
+    // }
+
+    particlesMesh.rotation.z = .01 * elapsedTime
+    particlesMesh.rotation.z = mouseY * (elapsedTime * 0.00009)
 
     // Render
     renderer.render(scene, camera)
