@@ -2,6 +2,7 @@ import './style.css'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import * as dat from 'dat.gui'
+import { Color } from 'three'
 
 // Debug
 const gui = new dat.GUI()
@@ -20,28 +21,80 @@ const material = new THREE.PointsMaterial({
 const sphere = new THREE.Points(geometry, material)
 scene.add(sphere)
 
+//Get Json Loc
+let url = 'https://raw.githubusercontent.com/lutangar/cities.json/master/cities.json';
+
+const jsonLoc = []
+let loc = fetch(url)
+        .then(function(response){
+            return response.json();
+        })
+        .then(function(obj){
+            console.log(obj);
+            jsonLoc.push(obj)
+        })
+        .catch(function(error){
+            console.error();
+        })
+
+
+console.log(jsonLoc)
+//Coordinate fron JSON (Lat, Lng)
+// var getCoordinatesFromLatLng = function(latitude, longitude, radiusEarth)
+// {
+//    let latitude_rad = latitude * Math.PI / 180;
+//    let longitude_rad = longitude * Math.PI / 180;
+
+//    let xPos= radiusEarth * Math.cos(latitude_rad) * Math.cos(longitude_rad);
+//    let zPos = radiusEarth * Math.cos(latitude_rad) * Math.sin(longitude_rad);
+//    let yPos = radiusEarth * Math.sin(latitude_rad);
+   
+//    return {x: xPos, y: yPos, z: zPos};
+// }
+
+// const countryLoc = getCoordinatesFromLatLng(42.46372, 1.49129, 1)
+
+// console.log(countryLoc)
+// const pt = new THREE.BufferGeometry()
+// const ptLoc = new Float32Array(3)
+
+// ptLoc[0] = countryLoc.x
+// ptLoc[1] = countryLoc.y
+// ptLoc[2] = countryLoc.z
+
+// console.log(ptLoc)
+
+// pt.setAttribute('position', new THREE.BufferAttribute(ptLoc, 3))
+// const ptMat = new THREE.PointsMaterial({
+//         size: 0.05,
+//         color: 'red'
+//     })
+
+// const mesh = new THREE.Points(pt, ptMat)
+// scene.add(mesh)
+
 //Particles
-const particlesGeo = new THREE.BufferGeometry()
-const particlesCount = 6000
+// const particlesGeo = new THREE.BufferGeometry()
+// const particlesCount = 6000
 
-const posArray = new Float32Array(particlesCount * 3)
+// const posArray = new Float32Array(particlesCount * 3)
 
 
-for (let i = 0; i < particlesCount; i++) {
-    posArray[i] = (Math.random() - 0.5) * 50
-}
+// for (let i = 0; i < particlesCount; i++) {
+//     posArray[i] = (Math.random() - 0.5) * 50
+// }
 
-particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3))
+// particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3))
 
-console.log(particlesGeo.attributes.position.array.length)
-console.log(particlesGeo.attributes)
+// console.log(particlesGeo.attributes.position.array.length)
+// console.log(particlesGeo.attributes)
 
-const particleMat = new THREE.PointsMaterial({
-    size: 0.02
-})
+// const particleMat = new THREE.PointsMaterial({
+//     size: 0.02
+// })
 
-const particlesMesh = new THREE.Points(particlesGeo, particleMat)
-scene.add(particlesMesh)
+// const particlesMesh = new THREE.Points(particlesGeo, particleMat)
+// scene.add(particlesMesh)
 
 
 
@@ -95,7 +148,6 @@ let mouseY = 0
 function animateParticles(event) {
     mouseY = event.clientY
     mouseX = event.clientX
-    mouseY.enableDamping = true
 }
 
 // Animation
@@ -108,7 +160,7 @@ const animate = () => {
     // Update objects
     sphere.rotation.y = .15 * elapsedTime
 
-    particlesMesh.position.z = .3 * elapsedTime
+    // particlesMesh.position.z = .3 * elapsedTime
 
     // for (let i = 0; i < particlesMesh.position.count; i++) {
     //     if (particlesMesh[i].position.z > 3) {
@@ -116,9 +168,9 @@ const animate = () => {
     //     }
     // }
 
-    particlesMesh.rotation.z = .01 * elapsedTime
-    particlesMesh.rotation.z = mouseY * (elapsedTime * 0.00009)
-    particlesMesh.rotation.y = mouseX * (elapsedTime * 0.00009)
+    // particlesMesh.rotation.z = .01 * elapsedTime
+    // particlesMesh.rotation.z = mouseY * (elapsedTime * 0.00009)
+    // particlesMesh.rotation.y = mouseX * (elapsedTime * 0.00009)
 
     // Render
     renderer.render(scene, camera)
