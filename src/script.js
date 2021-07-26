@@ -39,39 +39,38 @@ let loc = fetch(url)
 
 
 console.log(jsonLoc)
+
 //Coordinate fron JSON (Lat, Lng)
-// var getCoordinatesFromLatLng = function(latitude, longitude, radiusEarth)
-// {
-//    let latitude_rad = latitude * Math.PI / 180;
-//    let longitude_rad = longitude * Math.PI / 180;
+var getCoordinatesFromLatLng = function(latitude, longitude, radiusEarth)
+{
+   let latitude_rad = latitude * Math.PI / 180;
+   let longitude_rad = longitude * Math.PI / 180;
 
-//    let xPos= radiusEarth * Math.cos(latitude_rad) * Math.cos(longitude_rad);
-//    let zPos = radiusEarth * Math.cos(latitude_rad) * Math.sin(longitude_rad);
-//    let yPos = radiusEarth * Math.sin(latitude_rad);
+   let xPos= radiusEarth * Math.cos(latitude_rad) * Math.cos(longitude_rad);
+   let zPos = radiusEarth * Math.cos(latitude_rad) * Math.sin(longitude_rad);
+   let yPos = radiusEarth * Math.sin(latitude_rad);
    
-//    return {x: xPos, y: yPos, z: zPos};
-// }
+   return {x: xPos, y: yPos, z: zPos};
+}
 
-// const countryLoc = getCoordinatesFromLatLng(42.46372, 1.49129, 1)
+const countryLoc = getCoordinatesFromLatLng(42.46372, 1.49129, 1)
 
 // console.log(countryLoc)
-// const pt = new THREE.BufferGeometry()
-// const ptLoc = new Float32Array(3)
+const pt = new THREE.BufferGeometry()
+const ptLoc = new Float32Array(3)
 
-// ptLoc[0] = countryLoc.x
-// ptLoc[1] = countryLoc.y
-// ptLoc[2] = countryLoc.z
+ptLoc[0] = countryLoc.x
+ptLoc[1] = countryLoc.y
+ptLoc[2] = countryLoc.z
 
-// console.log(ptLoc)
+pt.setAttribute('position', new THREE.BufferAttribute(ptLoc, 3))
+const ptMat = new THREE.PointsMaterial({
+        size: 0.05,
+        color: 'red'
+    })
 
-// pt.setAttribute('position', new THREE.BufferAttribute(ptLoc, 3))
-// const ptMat = new THREE.PointsMaterial({
-//         size: 0.05,
-//         color: 'red'
-//     })
-
-// const mesh = new THREE.Points(pt, ptMat)
-// scene.add(mesh)
+const mesh = new THREE.Points(pt, ptMat)
+scene.add(mesh)
 
 //Particles
 // const particlesGeo = new THREE.BufferGeometry()
