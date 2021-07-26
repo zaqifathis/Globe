@@ -37,7 +37,7 @@ console.log(particlesGeo.attributes.position.array.length)
 console.log(particlesGeo.attributes)
 
 const particleMat = new THREE.PointsMaterial({
-    size: 0.01
+    size: 0.02
 })
 
 const particlesMesh = new THREE.Points(particlesGeo, particleMat)
@@ -95,6 +95,7 @@ let mouseY = 0
 function animateParticles(event) {
     mouseY = event.clientY
     mouseX = event.clientX
+    mouseY.enableDamping = true
 }
 
 // Animation
@@ -107,7 +108,7 @@ const animate = () => {
     // Update objects
     sphere.rotation.y = .15 * elapsedTime
 
-    particlesMesh.position.z = .2 * elapsedTime
+    particlesMesh.position.z = .3 * elapsedTime
 
     // for (let i = 0; i < particlesMesh.position.count; i++) {
     //     if (particlesMesh[i].position.z > 3) {
@@ -117,6 +118,7 @@ const animate = () => {
 
     particlesMesh.rotation.z = .01 * elapsedTime
     particlesMesh.rotation.z = mouseY * (elapsedTime * 0.00009)
+    particlesMesh.rotation.y = mouseX * (elapsedTime * 0.00009)
 
     // Render
     renderer.render(scene, camera)
