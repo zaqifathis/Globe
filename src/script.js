@@ -3,9 +3,10 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import * as dat from 'dat.gui'
 import { Color } from 'three'
+import cities from 'cities.json'
 
 // Debug
-const gui = new dat.GUI()
+// const gui = new dat.GUI()
 
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
@@ -21,41 +22,49 @@ const material = new THREE.PointsMaterial({
 const sphere = new THREE.Points(geometry, material)
 scene.add(sphere)
 
-//Get Json Loc
-let url = 'https://raw.githubusercontent.com/lutangar/cities.json/master/cities.json';
+/*
+Get Coordinates 
+from lat, lng > vector3
+*/
+const latitudes = []
+const longitudes = []
 
-const jsonLoc = []
-let loc = fetch(url)
-        .then(function(response){
-            return response.json();
-        })
-        .then(function(obj){
-            console.log(obj);
-            jsonLoc.push(obj)
-        })
-        .catch(function(error){
-            console.error();
-        })
-
-
-console.log(jsonLoc)
-
-//Coordinate fron JSON (Lat, Lng)
-var getCoordinatesFromLatLng = function(latitude, longitude, radiusEarth)
-{
-   let latitude_rad = latitude * Math.PI / 180;
-   let longitude_rad = longitude * Math.PI / 180;
-
-   let xPos= radiusEarth * Math.cos(latitude_rad) * Math.cos(longitude_rad);
-   let zPos = radiusEarth * Math.cos(latitude_rad) * Math.sin(longitude_rad);
-   let yPos = radiusEarth * Math.sin(latitude_rad);
-   
-   return {x: xPos, y: yPos, z: zPos};
+for (let i = 0; i < cities.length; i++) {
+    latitudes.push(parseFloat(cities[i].lat))
+    longitudes.push(parseFloat(cities[i].lng))
 }
+
+console.log(latitudes.length)
+
+var getCoordinatesFromLatLng = function (latitude, longitude, radiusEarth) {
+    let latitude_rad = latitude * Math.PI / 180;
+    let longitude_rad = longitude * Math.PI / 180;
+
+    let xPos = radiusEarth * Math.cos(latitude_rad) * Math.cos(longitude_rad);
+    let zPos = radiusEarth * Math.cos(latitude_rad) * Math.sin(longitude_rad);
+    let yPos = radiusEarth * Math.sin(latitude_rad);
+
+    return { x: xPos, y: yPos, z: zPos };
+}
+
+const ptCoor = new THREE.BufferGeometry()
+
+const geoLengths = latitudes.length
+const geoCoord = []
+for (let i = 0; i < geoLengths; i++) {
+    geoCoord[i] = getCoordinatesFromLatLng(latitudes[i], longitudes[i], 3)
+}
+
+const geoLocs = new Float32Array(geoLengths * 3)
+
+console.log(geoCoord[0])
+console.log(geoCoord[0].x)
+console.log(geoCoord[0].y)
+console.log(geoCoord[0].z)
+
 
 const countryLoc = getCoordinatesFromLatLng(42.46372, 1.49129, 1)
 
-// console.log(countryLoc)
 const pt = new THREE.BufferGeometry()
 const ptLoc = new Float32Array(3)
 
@@ -65,9 +74,9 @@ ptLoc[2] = countryLoc.z
 
 pt.setAttribute('position', new THREE.BufferAttribute(ptLoc, 3))
 const ptMat = new THREE.PointsMaterial({
-        size: 0.05,
-        color: 'red'
-    })
+    size: 0.05,
+    color: 'red'
+})
 
 const mesh = new THREE.Points(pt, ptMat)
 scene.add(mesh)
