@@ -2,7 +2,7 @@ import './style.css'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import * as dat from 'dat.gui'
-import { Color } from 'three'
+import { BufferAttribute, Color, Float32BufferAttribute } from 'three'
 import cities from 'cities.json'
 
 // Debug
@@ -15,12 +15,12 @@ const canvas = document.querySelector('canvas.webgl')
 const scene = new THREE.Scene()
 
 // Sphere
-const geometry = new THREE.SphereBufferGeometry(1, 30, 30)
-const material = new THREE.PointsMaterial({
-    size: 0.008
-})
-const sphere = new THREE.Points(geometry, material)
-scene.add(sphere)
+// const geometry = new THREE.SphereBufferGeometry(1, 30, 30)
+// const material = new THREE.PointsMaterial({
+//     size: 0.008
+// })
+// const sphere = new THREE.Points(geometry, material)
+// scene.add(sphere)
 
 /*
 Get Coordinates 
@@ -50,59 +50,55 @@ var getCoordinatesFromLatLng = function (latitude, longitude, radiusEarth) {
 const ptCoor = new THREE.BufferGeometry()
 
 const geoLengths = latitudes.length
+
 const geoCoord = []
 for (let i = 0; i < geoLengths; i++) {
-    geoCoord[i] = getCoordinatesFromLatLng(latitudes[i], longitudes[i], 3)
+    geoCoord[i] = getCoordinatesFromLatLng(latitudes[i], longitudes[i], 1)
 }
 
-const geoLocs = new Float32Array(geoLengths * 3)
+const position = []
 
-console.log(geoCoord[0])
-console.log(geoCoord[0].x)
-console.log(geoCoord[0].y)
-console.log(geoCoord[0].z)
+for( let i = 0; i < geoLengths; i++){
+    position.push(
+        geoCoord[i].x ,
+        geoCoord[i].y ,
+        geoCoord[i].z
+    )
+}
 
+ptCoor.setAttribute('position', new Float32BufferAttribute(position, 3))
 
-const countryLoc = getCoordinatesFromLatLng(42.46372, 1.49129, 1)
-
-const pt = new THREE.BufferGeometry()
-const ptLoc = new Float32Array(3)
-
-ptLoc[0] = countryLoc.x
-ptLoc[1] = countryLoc.y
-ptLoc[2] = countryLoc.z
-
-pt.setAttribute('position', new THREE.BufferAttribute(ptLoc, 3))
 const ptMat = new THREE.PointsMaterial({
-    size: 0.05,
+    size: 0.002,
     color: 'red'
 })
 
-const mesh = new THREE.Points(pt, ptMat)
+const mesh = new THREE.Points(ptCoor, ptMat)
 scene.add(mesh)
 
+
 //Particles
-// const particlesGeo = new THREE.BufferGeometry()
-// const particlesCount = 6000
+const particlesGeo = new THREE.BufferGeometry()
+const particlesCount = 6000
 
-// const posArray = new Float32Array(particlesCount * 3)
+const posArray = new Float32Array(particlesCount * 3)
 
 
-// for (let i = 0; i < particlesCount; i++) {
-//     posArray[i] = (Math.random() - 0.5) * 50
-// }
+for (let i = 0; i < particlesCount; i++) {
+    posArray[i] = (Math.random() - 0.5) * 50
+}
 
-// particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3))
+particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3))
 
-// console.log(particlesGeo.attributes.position.array.length)
-// console.log(particlesGeo.attributes)
+console.log(particlesGeo.attributes.position.array.length)
+console.log(particlesGeo.attributes)
 
-// const particleMat = new THREE.PointsMaterial({
-//     size: 0.02
-// })
+const particleMat = new THREE.PointsMaterial({
+    size: 0.01
+})
 
-// const particlesMesh = new THREE.Points(particlesGeo, particleMat)
-// scene.add(particlesMesh)
+const particlesMesh = new THREE.Points(particlesGeo, particleMat)
+scene.add(particlesMesh)
 
 
 
@@ -130,7 +126,7 @@ window.addEventListener('resize', () => {
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100)
 camera.position.x = 0
 camera.position.y = 0
-camera.position.z = 3
+camera.position.z = 2
 scene.add(camera)
 
 // Controls
@@ -166,19 +162,14 @@ const animate = () => {
     const elapsedTime = clock.getElapsedTime()
 
     // Update objects
-    sphere.rotation.y = .15 * elapsedTime
+    // sphere.rotation.y = .1 * elapsedTime
+    mesh.rotation.y = .1 * elapsedTime
 
-    // particlesMesh.position.z = .3 * elapsedTime
-
-    // for (let i = 0; i < particlesMesh.position.count; i++) {
-    //     if (particlesMesh[i].position.z > 3) {
-    //         particlesMesh[i].position.z = 0
-    //     }
-    // }
+    particlesMesh.rotation.y = .1 * elapsedTime
 
     // particlesMesh.rotation.z = .01 * elapsedTime
-    // particlesMesh.rotation.z = mouseY * (elapsedTime * 0.00009)
-    // particlesMesh.rotation.y = mouseX * (elapsedTime * 0.00009)
+    particlesMesh.rotation.x = mouseY * (elapsedTime * 0.00009)
+    particlesMesh.rotation.y = mouseX * (elapsedTime * 0.00009)
 
     // Render
     renderer.render(scene, camera)
