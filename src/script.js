@@ -101,18 +101,18 @@ const vec2 = new THREE.Vector3(0, 0, 0)
 const sitesVec = []
 
 for (let i = 0; i < sitesLat.length; i++) {
-    vec1.push(new THREE.Vector3(sitesCoord[i].x, sitesCoord[i].y, sitesCoord[i].z) )
+    vec1.push(new THREE.Vector3(sitesCoord[i].x, sitesCoord[i].y, sitesCoord[i].z))
 }
 
 const vecDir = []
-for ( let i = 0 ; i < sitesLat.length; i++){
+for (let i = 0; i < sitesLat.length; i++) {
     var dirTemp = new THREE.Vector3()
     vecDir.push(dirTemp.subVectors(vec2, vec1[i]).normalize())
 }
 
 var num = 2.001
 
-for ( let i = 0 ; i < sitesLat.length; i++){
+for (let i = 0; i < sitesLat.length; i++) {
     sitesVec.push(
         vecDir[i].x + vec1[i].x * num,
         vecDir[i].y + vec1[i].y * num,
@@ -120,46 +120,31 @@ for ( let i = 0 ; i < sitesLat.length; i++){
     )
 }
 
-//Sites Geo
-// const sitesPts = new THREE.BufferGeometry()
-// sitesPts.setAttribute('position', new Float32BufferAttribute(sitesVec, 3))
-
-// const sitesMat = new THREE.PointsMaterial({
-//     size: 0.008,
-//     color: 0xfff400,
-// })
-
-// const mesh2 = new THREE.Points(sitesPts, sitesMat)
-// scene.add(mesh2)
-
 
 //test
-const geo = new THREE.SphereBufferGeometry(0.1,30,30)
-const geoMat = new THREE.MeshStandardMaterial({
-    color: 0xffccaa,
-    emissive: 0xffccaa,
-    emissiveIntensity: 100
-})
-// const spheres = []
 
-// // for (let i = 0; i < sites.length; i++){
-    
-// //     
-// //     spheres.push(
-// //         sphere.position.x = vec1[i].x,
-// //         sphere.position.y = vec1[i].y,
-// //         sphere.position.z = vec1[i].z,
-// //     )
-// // }
+const sphereGroup = new THREE.Group()
+const geo = new THREE.SphereBufferGeometry(0.004, 30, 30)
 
-const sphere = new THREE.Mesh(geo, geoMat)
-scene.add(sphere)
-// scene.add(spheres)
+for (let i = 0; i < sites.length; i++) {
+    const geoMat = new THREE.MeshStandardMaterial({
+        color: 0xffccaa,
+        emissive: 0xffccaa,
+        emissiveIntensity: 10000
+    })
+    const sphere = new THREE.Mesh(geo, geoMat)
+    sphere.position.x = vec1[i].x
+    sphere.position.y = vec1[i].y
+    sphere.position.z = vec1[i].z
+    sphereGroup.add(sphere)
+}
+
+scene.add(sphereGroup)
 
 /**
  * Lights
  */
-const ptLight = new THREE.PointLight( 0xffccaa, 1000000, 100000 )
+const ptLight = new THREE.PointLight(0xffccaa, 100, 1000000)
 ptLight.position.set(sitesCoord.x, sitesCoord.y, sitesCoord.z)
 scene.add(ptLight)
 
@@ -221,22 +206,22 @@ controls.enableDamping = true
 const renderer = new THREE.WebGLRenderer({
     canvas: canvas,
     alpha: true,
-    antialias: true
+    antialias: true,
 })
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 renderer.setClearColor(new THREE.Color("rgb(48, 48, 48)"))
 
-const composer = new POSTPROCESSING.EffectComposer(renderer)
-composer.addPass(new POSTPROCESSING.RenderPass(scene, camera))
+// const composer = new POSTPROCESSING.EffectComposer(renderer)
+// composer.addPass(new POSTPROCESSING.RenderPass(scene, camera))
 
-const effectPass = new POSTPROCESSING.EffectPass(
-    camera,
-    new POSTPROCESSING.BloomEffect()
-)
+// const effectPass = new POSTPROCESSING.EffectPass(
+//     camera,
+//     new POSTPROCESSING.BloomEffect()
+// )
 
-effectPass.renderToScreen = true
-composer.addPass(effectPass)
+// effectPass.renderToScreen = true
+// composer.addPass(effectPass)
 
 //Mouse
 document.addEventListener('mousemove', animateParticles)
@@ -258,7 +243,7 @@ const animate = () => {
 
     // Update objects
     mesh.rotation.y = .08 * elapsedTime
-    // mesh2.rotation.y = .08 * elapsedTime
+    sphereGroup.rotation.y = .08 * elapsedTime
 
     particlesMesh.rotation.y = .1 * elapsedTime
 
@@ -266,8 +251,8 @@ const animate = () => {
     particlesMesh.rotation.y = mouseX * (elapsedTime * 0.00009)
 
     // Render
-    // renderer.render(scene, camera)
-    composer.render()
+    renderer.render(scene, camera)
+    // composer.render()
 
     // Call tick again on the next frame
     window.requestAnimationFrame(animate)
