@@ -1,8 +1,9 @@
 import './style.css'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-import { BufferAttribute, Color, Float32BufferAttribute } from 'three'
+import { BufferAttribute, Color, Float32BufferAttribute, Light, PointsMaterial } from 'three'
 import cities from 'cities.json'
+import * as POSTPROCESSING from 'postprocessing'
 
 
 
@@ -56,9 +57,11 @@ for (let i = 0; i < geoLengths; i++) {
 
 ptCoor.setAttribute('position', new Float32BufferAttribute(position, 3))
 
+console.log(geoLengths)
+
 const ptMat = new THREE.PointsMaterial({
-    size: 0.002,
-    color: 'red'
+    size: 0.001,
+    color: 0xd0ed
 })
 
 const mesh = new THREE.Points(ptCoor, ptMat)
@@ -77,8 +80,6 @@ for (let i = 0; i < sites.length; i++) {
     sitesLng.push(parseFloat(sites[i].latlng.lng))
 }
 
-// const sitesPts = new THREE.BufferGeometry()
-
 const sitesCoord = []
 const sitesPos = []
 
@@ -94,22 +95,74 @@ for (let i = 0; i < sitesLat.length; i++) {
     )
 }
 
-// sitesPts.setAttribute('position', new Float32BufferAttribute(sitesPos, 3))
+//vector Direction 
+const vec1 = []
+const vec2 = new THREE.Vector3(0, 0, 0)
+const sitesVec = []
+
+for (let i = 0; i < sitesLat.length; i++) {
+    vec1.push(new THREE.Vector3(sitesCoord[i].x, sitesCoord[i].y, sitesCoord[i].z) )
+}
+
+const vecDir = []
+for ( let i = 0 ; i < sitesLat.length; i++){
+    var dirTemp = new THREE.Vector3()
+    vecDir.push(dirTemp.subVectors(vec2, vec1[i]).normalize())
+}
+
+var num = 2.001
+
+for ( let i = 0 ; i < sitesLat.length; i++){
+    sitesVec.push(
+        vecDir[i].x + vec1[i].x * num,
+        vecDir[i].y + vec1[i].y * num,
+        vecDir[i].z + vec1[i].z * num
+    )
+}
+
+//Sites Geo
+// const sitesPts = new THREE.BufferGeometry()
+// sitesPts.setAttribute('position', new Float32BufferAttribute(sitesVec, 3))
 
 // const sitesMat = new THREE.PointsMaterial({
-//     size: 0.02,
-//     color: 'white'
+//     size: 0.008,
+//     color: 0xfff400,
 // })
 
 // const mesh2 = new THREE.Points(sitesPts, sitesMat)
 // scene.add(mesh2)
 
-const sitesPts = new THREE.PointLight(0xff0000, 100, 100)
-const posArr = new Float32Array(sitesPos, 3)
-sitesPts.position.set(posArr)
-scene.add(sitesPts)
 
-console.log(ptCoor)
+//test
+const geo = new THREE.SphereBufferGeometry(0.1,30,30)
+const geoMat = new THREE.MeshStandardMaterial({
+    color: 0xffccaa,
+    emissive: 0xffccaa,
+    emissiveIntensity: 100
+})
+// const spheres = []
+
+// // for (let i = 0; i < sites.length; i++){
+    
+// //     
+// //     spheres.push(
+// //         sphere.position.x = vec1[i].x,
+// //         sphere.position.y = vec1[i].y,
+// //         sphere.position.z = vec1[i].z,
+// //     )
+// // }
+
+const sphere = new THREE.Mesh(geo, geoMat)
+scene.add(sphere)
+// scene.add(spheres)
+
+/**
+ * Lights
+ */
+const ptLight = new THREE.PointLight( 0xffccaa, 1000000, 100000 )
+ptLight.position.set(sitesCoord.x, sitesCoord.y, sitesCoord.z)
+scene.add(ptLight)
+
 
 //Particles
 const particlesGeo = new THREE.BufferGeometry()
@@ -125,7 +178,8 @@ for (let i = 0; i < particlesCount; i++) {
 particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3))
 
 const particleMat = new THREE.PointsMaterial({
-    size: 0.0001
+    size: 0.0001,
+    color: 0xf7f7f7
 })
 
 const particlesMesh = new THREE.Points(particlesGeo, particleMat)
@@ -156,7 +210,7 @@ window.addEventListener('resize', () => {
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100)
 camera.position.x = 0
 camera.position.y = 0
-camera.position.z = 2
+camera.position.z = 1.75
 scene.add(camera)
 
 // Controls
@@ -171,7 +225,18 @@ const renderer = new THREE.WebGLRenderer({
 })
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-renderer.setClearColor(new THREE.Color("rgb(15, 22, 26)"))
+renderer.setClearColor(new THREE.Color("rgb(48, 48, 48)"))
+
+const composer = new POSTPROCESSING.EffectComposer(renderer)
+composer.addPass(new POSTPROCESSING.RenderPass(scene, camera))
+
+const effectPass = new POSTPROCESSING.EffectPass(
+    camera,
+    new POSTPROCESSING.BloomEffect()
+)
+
+effectPass.renderToScreen = true
+composer.addPass(effectPass)
 
 //Mouse
 document.addEventListener('mousemove', animateParticles)
@@ -192,8 +257,8 @@ const animate = () => {
     const elapsedTime = clock.getElapsedTime()
 
     // Update objects
-    mesh.rotation.y = .1 * elapsedTime
-    sitesPts.rotation.y = .1 * elapsedTime
+    mesh.rotation.y = .08 * elapsedTime
+    // mesh2.rotation.y = .08 * elapsedTime
 
     particlesMesh.rotation.y = .1 * elapsedTime
 
@@ -201,7 +266,8 @@ const animate = () => {
     particlesMesh.rotation.y = mouseX * (elapsedTime * 0.00009)
 
     // Render
-    renderer.render(scene, camera)
+    // renderer.render(scene, camera)
+    composer.render()
 
     // Call tick again on the next frame
     window.requestAnimationFrame(animate)
