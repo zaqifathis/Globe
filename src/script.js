@@ -212,16 +212,16 @@ renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 renderer.setClearColor(new THREE.Color("rgb(48, 48, 48)"))
 
-// const composer = new POSTPROCESSING.EffectComposer(renderer)
-// composer.addPass(new POSTPROCESSING.RenderPass(scene, camera))
+const composer = new POSTPROCESSING.EffectComposer(renderer)
+composer.addPass(new POSTPROCESSING.RenderPass(scene, camera))
 
-// const effectPass = new POSTPROCESSING.EffectPass(
-//     camera,
-//     new POSTPROCESSING.BloomEffect()
-// )
+const effectPass = new POSTPROCESSING.EffectPass(
+    camera,
+    new POSTPROCESSING.BloomEffect()
+)
 
-// effectPass.renderToScreen = true
-// composer.addPass(effectPass)
+effectPass.renderToScreen = true
+composer.addPass(effectPass)
 
 //Mouse
 document.addEventListener('mousemove', animateParticles)
@@ -251,8 +251,8 @@ const animate = () => {
     particlesMesh.rotation.y = mouseX * (elapsedTime * 0.00009)
 
     // Render
-    renderer.render(scene, camera)
-    // composer.render()
+    // renderer.render(scene, camera)
+    composer.render()
 
     // Call tick again on the next frame
     window.requestAnimationFrame(animate)
