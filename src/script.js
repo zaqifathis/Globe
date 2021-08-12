@@ -7,7 +7,7 @@ import * as POSTPROCESSING from 'postprocessing'
 import * as TWEEN from 'tween'
 
 
-let camera, scene, renderer, composer, target, globeParticles, particlesBackground
+let camera, scene, renderer, controls, composer, target, globeParticles, particlesBackground
 let mouseX = 0
 let mouseY = 0
 
@@ -17,6 +17,15 @@ const sizes = {
     width: window.innerWidth,
     height: window.innerHeight
 }
+
+var center = new THREE.Vector3()
+var vectorStart = new THREE.Vector3()
+var vectorEnd = new THREE.Vector3(0, 0, globeRad)
+var normal = new THREE.Vector3()
+var lookAt = new THREE.Vector3()
+var angle = { value: 0 }
+var angleEnd = { value: 0 }
+
 
 
 init()
@@ -134,6 +143,7 @@ function init() {
     controls.enableDamping = true
 
 
+
     //Mouse
 
 
@@ -168,8 +178,12 @@ function animate() {
     renderer.render(scene, camera)
     // composer.render()
 
+    //Update Tween
+    TWEEN.update()
+
     // Call tick again on the next frame
     window.requestAnimationFrame(animate)
+
 }
 
 
@@ -191,14 +205,14 @@ function onWindowResize() {
 
 function getCoordinatesFromLatLng(latitude, longitude, radiusEarth) {
 
-    let latitude_rad = latitude * Math.PI / 180;
-    let longitude_rad = longitude * Math.PI / 180;
+    let latitude_rad = latitude * Math.PI / 180
+    let longitude_rad = longitude * Math.PI / 180
 
-    let xPos = radiusEarth * Math.cos(latitude_rad) * Math.cos(longitude_rad);
-    let zPos = radiusEarth * Math.cos(latitude_rad) * Math.sin(longitude_rad);
+    let xPos = radiusEarth * - (Math.cos(latitude_rad)) * Math.cos(longitude_rad)
+    let zPos = radiusEarth * Math.cos(latitude_rad) * Math.sin(longitude_rad)
     let yPos = radiusEarth * Math.sin(latitude_rad);
 
-    return { x: xPos, y: yPos, z: zPos };
+    return { x: xPos, y: yPos, z: zPos }
 }
 
 
@@ -226,6 +240,56 @@ function generateTarget() {
     target.position.x = sitesCoord[random].x
     target.position.y = sitesCoord[random].y
     target.position.z = sitesCoord[random].z
+
+    /*
+    TEST 1
+    */
+
+    //get Quaternion from Points
+    // vectorStart = target.position
+    // vectorStart.normalize()
+    // vectorEnd.normalize()
+    // var getQuaternion = new THREE.Quaternion()
+    // getQuaternion.setFromUnitVectors(vectorStart, vectorEnd)
+
+    // //Tweening
+    // const euler = new THREE.Euler()
+    // const startQuaternion = new THREE.Quaternion() 
+    // const endQuaternion = getQuaternion
+
+    // startQuaternion.copy(target.quaternion).normalize()
+
+    // const tween = new TWEEN.Tween(startQuaternion)
+    //     .to(endQuaternion, 2000)
+    //     .delay(1000)
+    //     .easing(TWEEN.Easing.Exponential.InOut)
+    //     .onUpdate(function () {
+    //         euler.setFromQuaternion(startQuaternion)
+    //         target.setRotationFromEuler(euler)
+    //     }).onComplete(generateTarget)
+    // tween.start()
+
+    /*
+TEST 2
+*/
+
+    //get Vector, Angle, Normal
+    vectorStart = target.position
+    angle.value = 0
+    angleEnd.value = vectorEnd.angleTo(vectorStart)
+    normal.copy(vectorEnd).cross(vectorStart).normalize
+
+    //Tween
+    var tween = new TWEEN.Tween(angle)
+        .to(angleEnd, 5000)
+        .delay(1000)
+        .easing(TWEEN.Easing.Exponential.InOut)
+        .onUpdate(function () {
+            target.position.copy(vectorStart).applyAxisAngle(normal, angle.value)
+            // globeParticles.position.copy(vectorStart).applyAxisAngle(normal, angle.value)
+        }).onComplete(generateTarget)
+    // tween.chain(tween)
+    tween.start()
 
     setTimeout(generateTarget, 2000)
 
