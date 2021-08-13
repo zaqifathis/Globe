@@ -7,7 +7,7 @@ import * as POSTPROCESSING from 'postprocessing'
 import * as TWEEN from 'tween'
 
 
-let camera, scene, renderer, controls, composer, target, globeParticles, particlesBackground
+let camera, scene, renderer, controls, composer, target, target2, globeParticles, particlesBackground
 let mouseX = 0
 let mouseY = 0
 
@@ -87,7 +87,9 @@ function init() {
         emissiveIntensity: 10000
     })
     target = new THREE.Mesh(geo, geoMat)
+    target2 = new THREE.Mesh(geo, geoMat)
     scene.add(target)
+    scene.add(target2)
 
 
     //Particles Background
@@ -241,6 +243,10 @@ function generateTarget() {
     target.position.y = sitesCoord[random].y
     target.position.z = sitesCoord[random].z
 
+    target2.position.x = sitesCoord[random].x
+    target2.position.y = sitesCoord[random].y
+    target2.position.z = sitesCoord[random].z
+
     /*
     TEST 1
     */
@@ -275,23 +281,37 @@ TEST 2
 
     //get Vector, Angle, Normal
     vectorStart = target.position
+    normal.copy(vectorStart).cross(vectorEnd).normalize()
     angle.value = 0
     angleEnd.value = vectorEnd.angleTo(vectorStart)
-    normal.copy(vectorEnd).cross(vectorStart).normalize
 
-    //Tween
+    const camVec = vectorEnd
+    camVec.z = 1.75
+
     var tween = new TWEEN.Tween(angle)
         .to(angleEnd, 5000)
         .delay(1000)
         .easing(TWEEN.Easing.Exponential.InOut)
         .onUpdate(function () {
-            target.position.copy(vectorStart).applyAxisAngle(normal, angle.value)
-            // globeParticles.position.copy(vectorStart).applyAxisAngle(normal, angle.value)
-        }).onComplete(generateTarget)
-    // tween.chain(tween)
-    tween.start()
+            camera.position.copy(camVec).applyAxisAngle(normal, - (angle.value) )  
+            camera.lookAt(center)
+        })
+        .onComplete(generateTarget)
+        tween.start()
+    
+    //Tween
+    // var tween = new TWEEN.Tween(angle)
+    //     .to(angleEnd, 5000)
+    //     .delay(1000)
+    //     .easing(TWEEN.Easing.Exponential.InOut)
+    //     .onUpdate(function () {
+    //         target.position.copy(vectorStart).applyAxisAngle(normal, angle.value)
+    //         target.lookAt(lookAt.copy(target.position).normalize().multiplyScalar(globeRad))
+    //     }).onComplete(generateTarget)
+    // // tween.chain(tween)
+    // tween.start()
 
-    setTimeout(generateTarget, 2000)
+    // setTimeout(generateTarget, 2000)
 
     // const sitesPos = []
     // for (let i = 0; i < sitesLat.length; i++) {
