@@ -7,7 +7,7 @@ import * as POSTPROCESSING from 'postprocessing'
 import * as TWEEN from 'tween'
 
 
-let camera, scene, renderer, controls, composer, target, target2, globeParticles, particlesBackground
+let camera, scene, renderer, controls, composer, target, target2, globeParticles, particlesBackground, geoCoord
 let mouseX = 0
 let mouseY = 0
 
@@ -54,7 +54,7 @@ function init() {
         longitudes.push(parseFloat(cities[i].lng))
     }
 
-    const geoCoord = []
+    geoCoord = []
     for (let i = 0; i < latitudes.length; i++) {
         geoCoord[i] = getCoordinatesFromLatLng(latitudes[i], longitudes[i], globeRad)
     }
@@ -77,19 +77,63 @@ function init() {
     scene.add(globeParticles)
 
 
-    //Target Sphere
+    //DBF Project Locations
 
 
-    const geo = new THREE.SphereBufferGeometry(0.01, 30, 30)
-    const geoMat = new THREE.MeshStandardMaterial({
-        color: 0xffccaa,
-        emissive: 0xffccaa,
-        emissiveIntensity: 10000
+    const sites = require('./sites.json')
+    const sitesLat = []
+    const sitesLng = []
+
+    for (let i = 0; i < sites.length; i++) {
+        sitesLat.push(parseFloat(sites[i].latlng.lat))
+        sitesLng.push(parseFloat(sites[i].latlng.lng))
+    }
+
+    const sitesCoord = []
+    for (let i = 0; i < sites.length; i++) {
+        sitesCoord[i] = getCoordinatesFromLatLng(sitesLat[i], sitesLng[i], globeRad)
+    }
+
+    const sitesPos = []
+    for (let i = 0; i < sitesLat.length; i++) {
+        sitesPos.push(
+            sitesCoord[i].x,
+            sitesCoord[i].y,
+            sitesCoord[i].z
+        )
+    }
+    const sphereGroup = new THREE.Group()
+    const siteCoor = new THREE.SphereBufferGeometry(0.003, 30, 30)
+    for (let i = 0; i < sitesLat.length; i++) {
+        const siteMat = new THREE.MeshStandardMaterial({
+            color: 0xffccaa,
+            emissive: 0xffccaa,
+            emissiveIntensity: 10000
+        })
+        target2 = new THREE.Mesh(siteCoor, siteMat)
+        target2.position.x = sitesCoord[i].x
+        target2.position.y = sitesCoord[i].y
+        target2.position.z = sitesCoord[i].z
+        sphereGroup.add(target2)
+    }
+    scene.add(sphereGroup)
+
+    const ptLight = new THREE.PointLight(0xffccaa, 10000, 1000000)
+    ptLight.position.set(sitesCoord.x, sitesCoord.y, sitesCoord.z)
+    scene.add(ptLight)
+
+
+    //Random Target
+
+
+    const randGeo = new THREE.SphereBufferGeometry(0.005, 30, 30)
+    const randGeoMat = new THREE.MeshPhongMaterial({
+        color: 0xa00449,
+        emissive: 0xea5f5f,
+        shininess: 86
     })
-    target = new THREE.Mesh(geo, geoMat)
-    target2 = new THREE.Mesh(geo, geoMat)
+    target = new THREE.Mesh(randGeo, randGeoMat)
     scene.add(target)
-    scene.add(target2)
 
 
     //Particles Background
@@ -220,64 +264,10 @@ function getCoordinatesFromLatLng(latitude, longitude, radiusEarth) {
 
 function generateTarget() {
 
-    //Sites Coordinate
-    const sites = require('./sites.json')
-    const sitesLat = []
-    const sitesLng = []
-
-    for (let i = 0; i < sites.length; i++) {
-        sitesLat.push(parseFloat(sites[i].latlng.lat))
-        sitesLng.push(parseFloat(sites[i].latlng.lng))
-    }
-
-    const sitesCoord = []
-    for (let i = 0; i < sites.length; i++) {
-        sitesCoord[i] = getCoordinatesFromLatLng(sitesLat[i], sitesLng[i], globeRad)
-    }
-
-    //Random Site Coordinate
-    const random = Math.floor(Math.random() * sitesCoord.length)
-
-    //Target
-    target.position.x = sitesCoord[random].x
-    target.position.y = sitesCoord[random].y
-    target.position.z = sitesCoord[random].z
-
-    target2.position.x = sitesCoord[random].x
-    target2.position.y = sitesCoord[random].y
-    target2.position.z = sitesCoord[random].z
-
-    /*
-    TEST 1
-    */
-
-    //get Quaternion from Points
-    // vectorStart = target.position
-    // vectorStart.normalize()
-    // vectorEnd.normalize()
-    // var getQuaternion = new THREE.Quaternion()
-    // getQuaternion.setFromUnitVectors(vectorStart, vectorEnd)
-
-    // //Tweening
-    // const euler = new THREE.Euler()
-    // const startQuaternion = new THREE.Quaternion() 
-    // const endQuaternion = getQuaternion
-
-    // startQuaternion.copy(target.quaternion).normalize()
-
-    // const tween = new TWEEN.Tween(startQuaternion)
-    //     .to(endQuaternion, 2000)
-    //     .delay(1000)
-    //     .easing(TWEEN.Easing.Exponential.InOut)
-    //     .onUpdate(function () {
-    //         euler.setFromQuaternion(startQuaternion)
-    //         target.setRotationFromEuler(euler)
-    //     }).onComplete(generateTarget)
-    // tween.start()
-
-    /*
-TEST 2
-*/
+    const random = Math.floor(Math.random() * geoCoord.length)
+    target.position.x = geoCoord[random].x
+    target.position.y = geoCoord[random].y
+    target.position.z = geoCoord[random].z
 
     //get Vector, Angle, Normal
     vectorStart = target.position
@@ -293,58 +283,9 @@ TEST 2
         .delay(1000)
         .easing(TWEEN.Easing.Exponential.InOut)
         .onUpdate(function () {
-            camera.position.copy(camVec).applyAxisAngle(normal, - (angle.value) )  
+            camera.position.copy(camVec).applyAxisAngle(normal, - (angle.value))
             camera.lookAt(center)
         })
         .onComplete(generateTarget)
-        tween.start()
-    
-    //Tween
-    // var tween = new TWEEN.Tween(angle)
-    //     .to(angleEnd, 5000)
-    //     .delay(1000)
-    //     .easing(TWEEN.Easing.Exponential.InOut)
-    //     .onUpdate(function () {
-    //         target.position.copy(vectorStart).applyAxisAngle(normal, angle.value)
-    //         target.lookAt(lookAt.copy(target.position).normalize().multiplyScalar(globeRad))
-    //     }).onComplete(generateTarget)
-    // // tween.chain(tween)
-    // tween.start()
-
-    // setTimeout(generateTarget, 2000)
-
-    // const sitesPos = []
-    // for (let i = 0; i < sitesLat.length; i++) {
-    //     sitesPos.push(
-    //         sitesCoord[i].x,
-    //         sitesCoord[i].y,
-    //         sitesCoord[i].z
-    //     )
-    // }
-    // const vec1 = []
-    // // const vec2 = new THREE.Vector3(0, 0, 0)
-    // // const sitesVec = []
-    // for (let i = 0; i < sitesLat.length; i++) {
-    //     vec1.push(new THREE.Vector3(sitesCoord[i].x, sitesCoord[i].y, sitesCoord[i].z))
-    // }
-    // const vecDir = []
-    // for (let i = 0; i < sitesLat.length; i++) {
-    //     var dirTemp = new THREE.Vector3()
-    //     vecDir.push(dirTemp.subVectors(vec2, vec1[i]).normalize())
-    // }
-    // var num = 2.001
-    // for (let i = 0; i < sitesLat.length; i++) {
-    //     sitesVec.push(
-    //         vecDir[i].x + vec1[i].x * num,
-    //         vecDir[i].y + vec1[i].y * num,
-    //         vecDir[i].z + vec1[i].z * num
-    //     )
-    // }
-
-    // /**
-    //  * Lights
-    //  */
-    // const ptLight = new THREE.PointLight(0xffccaa, 100, 1000000)
-    // ptLight.position.set(sitesCoord[random].x, sitesCoord[random].y, sitesCoord[random].z)
-    // scene.add(ptLight)
+    tween.start()
 }
