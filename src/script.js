@@ -5,6 +5,7 @@ import { BufferAttribute, Color, Float32BufferAttribute, Int8Attribute, Light, P
 import cities from 'cities.json'
 import * as POSTPROCESSING from 'postprocessing'
 import * as TWEEN from 'tween'
+import { update } from 'tween'
 
 
 let camera, scene, renderer, controls, composer, target, target2, globeParticles, particlesBackground, geoCoord
@@ -185,8 +186,8 @@ function init() {
     // Controls
 
 
-    const controls = new OrbitControls(camera, canvas)
-    controls.enableDamping = true
+    // const controls = new OrbitControls(camera, canvas)
+    // controls.enableDamping = true
 
 
 
@@ -278,6 +279,17 @@ function generateTarget() {
     const camVec = vectorEnd
     camVec.z = 1.75
 
+    const targetCamPos = new THREE.Vector3()
+    var targetCamPos1 = new THREE.Vector3()
+    const targetDirection = new THREE.Vector3()
+    const targetDirection1 = new THREE.Vector3()
+    targetCamPos.copy(target.position)
+    targetDirection.subVectors(targetCamPos, center).normalize()
+    targetDirection1.subVectors(targetCamPos, center)
+    targetCamPos.add(targetDirection.multiplyScalar(.101))
+    targetCamPos1.copy(target.position)
+    targetCamPos1.add(targetDirection1.multiplyScalar(.75))
+
     var tween = new TWEEN.Tween(angle)
         .to(angleEnd, 5000)
         .delay(1000)
@@ -286,6 +298,17 @@ function generateTarget() {
             camera.position.copy(camVec).applyAxisAngle(normal, - (angle.value))
             camera.lookAt(center)
         })
-        .onComplete(generateTarget)
+
+    var tweenZoomIn = new TWEEN.Tween(camera.position)
+        .to(targetCamPos, 3000)
+        .easing(TWEEN.Easing.Exponential.InOut)
+
+    var tweenZoomOut = new TWEEN.Tween(camera.position)
+        .to(targetCamPos1, 3000)
+        .delay(1000)
+        .easing(TWEEN.Easing.Exponential.InOut)
+
+    tween.chain(tweenZoomIn)
+    tweenZoomIn.chain(tweenZoomOut)
     tween.start()
 }
