@@ -310,6 +310,9 @@ function generateTarget() {
         .to(targetCamPos1, 3000)
         .delay(1000)
         .easing(TWEEN.Easing.Exponential.InOut)
+    // .onComplete(() => {
+
+    // })
 
     tween.chain(tweenZoomIn)
     tweenZoomIn.chain(tweenZoomOut)
