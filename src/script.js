@@ -279,10 +279,13 @@ function generateTarget() {
     const camVec = vectorEnd
     camVec.z = 1.75
 
+    //Tween
+
     const targetCamPos = new THREE.Vector3()
     var targetCamPos1 = new THREE.Vector3()
     const targetDirection = new THREE.Vector3()
     const targetDirection1 = new THREE.Vector3()
+
     targetCamPos.copy(target.position)
     targetDirection.subVectors(targetCamPos, center).normalize()
     targetDirection1.subVectors(targetCamPos, center)
