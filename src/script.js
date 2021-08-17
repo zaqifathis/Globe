@@ -22,6 +22,7 @@ const sizes = {
 var center = new THREE.Vector3()
 var vectorStart = new THREE.Vector3()
 var vectorEnd = new THREE.Vector3(0, 0, globeRad)
+var camVec = new THREE.Vector3(0, 0, 1.75)
 var normal = new THREE.Vector3()
 var lookAt = new THREE.Vector3()
 var angle = { value: 0 }
@@ -186,9 +187,8 @@ function init() {
     // Controls
 
 
-    // const controls = new OrbitControls(camera, canvas)
-    // controls.enableDamping = true
-
+    const controls = new OrbitControls(camera, canvas)
+    controls.enableDamping = true
 
 
     //Mouse
@@ -276,9 +276,6 @@ function generateTarget() {
     angle.value = 0
     angleEnd.value = vectorEnd.angleTo(vectorStart)
 
-    const camVec = vectorEnd
-    camVec.z = 1.75
-
     //Tween
 
     const targetCamPos = new THREE.Vector3()
@@ -287,15 +284,17 @@ function generateTarget() {
     const targetDirection1 = new THREE.Vector3()
 
     targetCamPos.copy(target.position)
-    targetDirection.subVectors(targetCamPos, center).normalize()
-    targetDirection1.subVectors(targetCamPos, center)
-    targetCamPos.add(targetDirection.multiplyScalar(.101))
     targetCamPos1.copy(target.position)
+
+    targetDirection.subVectors(targetCamPos, center).normalize()
+    targetDirection1.subVectors(targetCamPos1, center)
+
+    targetCamPos.add(targetDirection.multiplyScalar(.101))
     targetCamPos1.add(targetDirection1.multiplyScalar(.75))
 
     var tween = new TWEEN.Tween(angle)
         .to(angleEnd, 5000)
-        .delay(1000)
+        .delay(500)
         .easing(TWEEN.Easing.Exponential.InOut)
         .onUpdate(function () {
             camera.position.copy(camVec).applyAxisAngle(normal, - (angle.value))
@@ -310,9 +309,15 @@ function generateTarget() {
         .to(targetCamPos1, 3000)
         .delay(1000)
         .easing(TWEEN.Easing.Exponential.InOut)
-    // .onComplete(() => {
+        .onComplete(() => {
+            camVec.copy(camera.position)
+            vectorEnd.copy(camVec)
+            var vectorCameraDirection = new THREE.Vector3()
+            vectorCameraDirection.subVectors(camVec, center)
+            vectorEnd.add(vectorCameraDirection.multiplyScalar(-.75))
 
-    // })
+            generateTarget()
+        })
 
     tween.chain(tweenZoomIn)
     tweenZoomIn.chain(tweenZoomOut)
