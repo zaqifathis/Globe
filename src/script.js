@@ -5,7 +5,7 @@ import { BufferAttribute, Color, Float32BufferAttribute, Int8Attribute, Light, P
 import cities from 'cities.json'
 import * as POSTPROCESSING from 'postprocessing'
 import * as TWEEN from 'tween'
-import { update } from 'tween'\
+import { update } from 'tween'
 import * as dat from 'dat.gui'
 
 
@@ -49,7 +49,7 @@ function init() {
 
     //dat gui text input
     const params = {
-        location = "Type your location"
+        location: "Type your location"
     }
 
     const gui = new dat.GUI()
