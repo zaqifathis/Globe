@@ -5,7 +5,8 @@ import { BufferAttribute, Color, Float32BufferAttribute, Int8Attribute, Light, P
 import cities from 'cities.json'
 import * as POSTPROCESSING from 'postprocessing'
 import * as TWEEN from 'tween'
-import { update } from 'tween'
+import { update } from 'tween'\
+import * as dat from 'dat.gui'
 
 
 let camera, scene, renderer, controls, composer, target, target2, globeParticles, particlesBackground, geoCoord
@@ -44,6 +45,17 @@ function init() {
     camera.position.y = 0
     camera.position.z = 1.75
     scene.add(camera)
+
+
+    //dat gui text input
+    const params = {
+        location = "Type your location"
+    }
+
+    const gui = new dat.GUI()
+    gui.add(params, "location").onFinishChange(function (value) {
+        console.log(value)
+    })
 
 
     // Globe Particle Coordinate
