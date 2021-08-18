@@ -9,7 +9,8 @@ import { update } from 'tween'
 import * as dat from 'dat.gui'
 
 
-let camera, scene, renderer, controls, composer, target, target2, globeParticles, particlesBackground, geoCoord
+let camera, scene, renderer, controls, composer, target, target2,
+    globeParticles, particlesBackground, geoCoord, guiLoc
 let mouseX = 0
 let mouseY = 0
 
@@ -45,17 +46,6 @@ function init() {
     camera.position.y = 0
     camera.position.z = 1.75
     scene.add(camera)
-
-
-    //dat gui text input
-    const params = {
-        location: "Type your location"
-    }
-
-    const gui = new dat.GUI()
-    gui.add(params, "location").onFinishChange(function (value) {
-        console.log(value)
-    })
 
 
     // Globe Particle Coordinate
@@ -135,6 +125,20 @@ function init() {
     const ptLight = new THREE.PointLight(0xffccaa, 10000, 1000000)
     ptLight.position.set(sitesCoord.x, sitesCoord.y, sitesCoord.z)
     scene.add(ptLight)
+
+
+    //dat gui text input
+    const params = {
+        location: "Type your location"
+    }
+
+    guiLoc = new dat.GUI()
+    guiLoc.add(params, "location").onFinishChange(function (value) {
+        console.log(value)
+        if (value.toLowerCase == "Jakarta".toLowerCase) {
+            console.log("yesyes")
+        }
+    })
 
 
     //Random Target
@@ -220,48 +224,6 @@ function init() {
 
 
 
-function animate() {
-
-    const elapsedTime = clock.getElapsedTime()
-
-    // Update objects
-    // target.rotation.y = .08 * elapsedTime
-    // globeParticles.rotation.y = .08 * elapsedTime
-
-    particlesBackground.rotation.y = .1 * elapsedTime
-
-    particlesBackground.rotation.x = mouseY * (elapsedTime * 0.00009)
-    particlesBackground.rotation.y = mouseX * (elapsedTime * 0.00009)
-
-    // Render
-    renderer.render(scene, camera)
-    // composer.render()
-
-    //Update Tween
-    TWEEN.update()
-
-    // Call tick again on the next frame
-    window.requestAnimationFrame(animate)
-
-}
-
-
-function onWindowResize() {
-
-    // Update sizes
-    sizes.width = window.innerWidth
-    sizes.height = window.innerHeight
-
-    // Update camera
-    camera.aspect = sizes.width / sizes.height
-    camera.updateProjectionMatrix()
-
-    // Update renderer
-    renderer.setSize(sizes.width, sizes.height)
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-}
-
-
 function getCoordinatesFromLatLng(latitude, longitude, radiusEarth) {
 
     let latitude_rad = latitude * Math.PI / 180
@@ -334,4 +296,46 @@ function generateTarget() {
     tween.chain(tweenZoomIn)
     tweenZoomIn.chain(tweenZoomOut)
     tween.start()
+}
+
+
+function onWindowResize() {
+
+    // Update sizes
+    sizes.width = window.innerWidth
+    sizes.height = window.innerHeight
+
+    // Update camera
+    camera.aspect = sizes.width / sizes.height
+    camera.updateProjectionMatrix()
+
+    // Update renderer
+    renderer.setSize(sizes.width, sizes.height)
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+}
+
+
+function animate() {
+
+    const elapsedTime = clock.getElapsedTime()
+
+    // Update objects
+    // target.rotation.y = .08 * elapsedTime
+    // globeParticles.rotation.y = .08 * elapsedTime
+
+    particlesBackground.rotation.y = .1 * elapsedTime
+
+    particlesBackground.rotation.x = mouseY * (elapsedTime * 0.00009)
+    particlesBackground.rotation.y = mouseX * (elapsedTime * 0.00009)
+
+    // Render
+    renderer.render(scene, camera)
+    // composer.render()
+
+    //Update Tween
+    TWEEN.update()
+
+    // Call tick again on the next frame
+    window.requestAnimationFrame(animate)
+
 }
