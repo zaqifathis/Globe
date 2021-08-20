@@ -10,7 +10,7 @@ import * as dat from 'dat.gui'
 
 
 let camera, scene, renderer, controls, composer, target, target2,
-    globeParticles, particlesBackground, geoCoord, guiLoc
+    globeParticles, particlesBackground, geoCoord, guiLoc, cityLoc
 let mouseX = 0
 let mouseY = 0
 
@@ -53,9 +53,11 @@ function init() {
 
     const latitudes = []
     const longitudes = []
+    const citiesName = []
     for (let i = 0; i < cities.length; i++) {
         latitudes.push(parseFloat(cities[i].lat))
         longitudes.push(parseFloat(cities[i].lng))
+        citiesName.push(cities[i].name)
     }
 
     geoCoord = []
@@ -71,6 +73,7 @@ function init() {
             geoCoord[i].z
         )
     }
+
     const ptCoor = new THREE.BufferGeometry()
     ptCoor.setAttribute('position', new Float32BufferAttribute(position, 3))
     const ptMat = new THREE.PointsMaterial({
@@ -127,21 +130,7 @@ function init() {
     scene.add(ptLight)
 
 
-    //dat gui text input
-    const params = {
-        location: "Type your location"
-    }
-
-    guiLoc = new dat.GUI()
-    guiLoc.add(params, "location").onFinishChange(function (value) {
-        console.log(value)
-        if (value.toLowerCase == "Jakarta".toLowerCase) {
-            console.log("yesyes")
-        }
-    })
-
-
-    //Random Target
+    //Target Location
 
 
     const randGeo = new THREE.SphereBufferGeometry(0.005, 30, 30)
@@ -152,6 +141,31 @@ function init() {
     })
     target = new THREE.Mesh(randGeo, randGeoMat)
     scene.add(target)
+
+
+    //dat gui text input
+
+
+    const params = {
+        location: "Type your location"
+    }
+
+    guiLoc = new dat.GUI()
+    guiLoc.add(params, "location").onFinishChange(function (value) {
+        for(let i = 0; i < citiesName.length; i++){
+            if ( value == (citiesName[i]).toLowerCase()){
+                cityLoc =  getCoordinatesFromLatLng(latitudes[i], longitudes[i], globeRad)
+                // console.log(citiesName[i], cityLoc)
+                
+                target.position.x = cityLoc.x
+                target.position.y = cityLoc.y
+                target.position.z = cityLoc.z
+                
+                generateTarget()
+            }
+        }
+    })
+
 
 
     //Particles Background
@@ -218,7 +232,7 @@ function init() {
 
     //
 
-    generateTarget()
+    // generateTarget()
 
 }
 
@@ -239,10 +253,10 @@ function getCoordinatesFromLatLng(latitude, longitude, radiusEarth) {
 
 function generateTarget() {
 
-    const random = Math.floor(Math.random() * geoCoord.length)
-    target.position.x = geoCoord[random].x
-    target.position.y = geoCoord[random].y
-    target.position.z = geoCoord[random].z
+    // const random = Math.floor(Math.random() * geoCoord.length)
+    // target.position.x = geoCoord[random].x
+    // target.position.y = geoCoord[random].y
+    // target.position.z = geoCoord[random].z
 
     //get Vector, Angle, Normal
     vectorStart = target.position
@@ -294,7 +308,7 @@ function generateTarget() {
         })
 
     tween.chain(tweenZoomIn)
-    tweenZoomIn.chain(tweenZoomOut)
+    // tweenZoomIn.chain(tweenZoomOut)
     tween.start()
 }
 
