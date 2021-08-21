@@ -144,11 +144,7 @@ function init() {
     scene.add(ptLight)
 
 
-<<<<<<< Updated upstream
     //Target Location
-=======
-    //Random Target
->>>>>>> Stashed changes
 
 
     const randGeo = new THREE.SphereBufferGeometry(0.005, 30, 30)
@@ -170,15 +166,15 @@ function init() {
 
     guiLoc = new dat.GUI()
     guiLoc.add(params, "location").onFinishChange(function (value) {
-        for(let i = 0; i < citiesName.length; i++){
-            if ( value == (citiesName[i]).toLowerCase()){
-                cityLoc =  getCoordinatesFromLatLng(latitudes[i], longitudes[i], globeRad)
+        for (let i = 0; i < citiesName.length; i++) {
+            if (value == (citiesName[i]).toLowerCase()) {
+                cityLoc = getCoordinatesFromLatLng(latitudes[i], longitudes[i], globeRad)
                 // console.log(citiesName[i], cityLoc)
-                
+
                 target.position.x = cityLoc.x
                 target.position.y = cityLoc.y
                 target.position.z = cityLoc.z
-                
+
                 generateTarget()
             }
         }
