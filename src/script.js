@@ -59,6 +59,10 @@ function init() {
         longitudes.push(parseFloat(cities[i].lng))
         citiesName.push(cities[i].name)
     }
+    // console.log(latitudes[1])
+    // console.log(longitudes[1])
+    // citiesName.slice(0,10)
+    // console.log(citiesName[1].toLowerCase())
 
     geoCoord = []
     for (let i = 0; i < latitudes.length; i++) {
@@ -82,6 +86,16 @@ function init() {
     })
     globeParticles = new THREE.Points(ptCoor, ptMat)
     scene.add(globeParticles)
+
+
+    //dat gui text input
+    const params = {
+        location: "Type your location"
+    }
+    guiLoc = new dat.GUI()
+    guiLoc.add(params, "location").onFinishChange(function (value) {
+        console.log(value)
+    })
 
 
     //DBF Project Locations
@@ -130,7 +144,11 @@ function init() {
     scene.add(ptLight)
 
 
+<<<<<<< Updated upstream
     //Target Location
+=======
+    //Random Target
+>>>>>>> Stashed changes
 
 
     const randGeo = new THREE.SphereBufferGeometry(0.005, 30, 30)
@@ -304,7 +322,7 @@ function generateTarget() {
             vectorCameraDirection.subVectors(camVec, center)
             vectorEnd.add(vectorCameraDirection.multiplyScalar(-.75))
 
-            generateTarget()
+            // generateTarget()
         })
 
     tween.chain(tweenZoomIn)
