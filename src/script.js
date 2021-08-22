@@ -54,15 +54,13 @@ function init() {
     const latitudes = []
     const longitudes = []
     const citiesName = []
+    const countryName = []
     for (let i = 0; i < cities.length; i++) {
         latitudes.push(parseFloat(cities[i].lat))
         longitudes.push(parseFloat(cities[i].lng))
         citiesName.push(cities[i].name)
+        countryName.push(cities[i].country)
     }
-    // console.log(latitudes[1])
-    // console.log(longitudes[1])
-    // citiesName.slice(0,10)
-    // console.log(citiesName[1].toLowerCase())
 
     geoCoord = []
     for (let i = 0; i < latitudes.length; i++) {
@@ -86,16 +84,6 @@ function init() {
     })
     globeParticles = new THREE.Points(ptCoor, ptMat)
     scene.add(globeParticles)
-
-
-    //dat gui text input
-    const params = {
-        location: "Type your location"
-    }
-    guiLoc = new dat.GUI()
-    guiLoc.add(params, "location").onFinishChange(function (value) {
-        console.log(value)
-    })
 
 
     //DBF Project Locations
@@ -124,7 +112,7 @@ function init() {
         )
     }
     const sphereGroup = new THREE.Group()
-    const siteCoor = new THREE.SphereBufferGeometry(0.003, 30, 30)
+    const siteCoor = new THREE.SphereBufferGeometry(0.004, 30, 30)
     for (let i = 0; i < sitesLat.length; i++) {
         const siteMat = new THREE.MeshStandardMaterial({
             color: 0xffccaa,
@@ -144,7 +132,9 @@ function init() {
     scene.add(ptLight)
 
 
-    //Target Location
+    /*
+    Target Location
+    */
 
 
     const randGeo = new THREE.SphereBufferGeometry(0.005, 30, 30)
@@ -160,24 +150,26 @@ function init() {
     //dat gui text input
 
 
-    const params = {
+    const textLoc = {
         location: "Type your location"
     }
 
     guiLoc = new dat.GUI()
-    guiLoc.add(params, "location").onFinishChange(function (value) {
+    guiLoc.add(textLoc, "location").onFinishChange(function (value) {
+        const citiesTemp = []
         for (let i = 0; i < citiesName.length; i++) {
             if (value == (citiesName[i]).toLowerCase()) {
                 cityLoc = getCoordinatesFromLatLng(latitudes[i], longitudes[i], globeRad)
-                // console.log(citiesName[i], cityLoc)
-
-                target.position.x = cityLoc.x
-                target.position.y = cityLoc.y
-                target.position.z = cityLoc.z
-
-                generateTarget()
+                citiesTemp.push(cityLoc)
+                console.log(citiesName[i], countryName[i], cityLoc)
             }
         }
+        target.position.x = citiesTemp[0].x
+        target.position.y = citiesTemp[0].y
+        target.position.z = citiesTemp[0].z
+
+        console.log(citiesTemp.length)
+        generateTarget()
     })
 
 
@@ -212,14 +204,14 @@ function init() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     renderer.setClearColor(new THREE.Color("rgb(25, 25, 25)"))
 
-    // composer = new POSTPROCESSING.EffectComposer(renderer)
-    // composer.addPass(new POSTPROCESSING.RenderPass(scene, camera))
-    // const effectPass = new POSTPROCESSING.EffectPass(
-    //     camera,
-    //     new POSTPROCESSING.BloomEffect()
-    // )
-    // effectPass.renderToScreen = true
-    // composer.addPass(effectPass)
+    composer = new POSTPROCESSING.EffectComposer(renderer)
+    composer.addPass(new POSTPROCESSING.RenderPass(scene, camera))
+    const effectPass = new POSTPROCESSING.EffectPass(
+        camera,
+        new POSTPROCESSING.BloomEffect()
+    )
+    effectPass.renderToScreen = true
+    composer.addPass(effectPass)
 
 
     // Update Sizes
@@ -231,8 +223,11 @@ function init() {
     // Controls
 
 
-    const controls = new OrbitControls(camera, canvas)
-    controls.enableDamping = true
+    // const controls = new OrbitControls(camera, canvas)
+    // controls.enableDamping = true
+    // controls.autoRotate = true
+    // controls.autoRotateSpeed = 0.5
+
 
 
     //Mouse
@@ -296,7 +291,7 @@ function generateTarget() {
 
     var tween = new TWEEN.Tween(angle)
         .to(angleEnd, 5000)
-        .delay(500)
+        .delay(200)
         .easing(TWEEN.Easing.Exponential.InOut)
         .onUpdate(function () {
             camera.position.copy(camVec).applyAxisAngle(normal, - (angle.value))
@@ -322,7 +317,7 @@ function generateTarget() {
         })
 
     tween.chain(tweenZoomIn)
-    // tweenZoomIn.chain(tweenZoomOut)
+    tweenZoomIn.chain(tweenZoomOut)
     tween.start()
 }
 
@@ -350,6 +345,8 @@ function animate() {
     // Update objects
     // target.rotation.y = .08 * elapsedTime
     // globeParticles.rotation.y = .08 * elapsedTime
+    // sphereGroup.rotation.y = .08 * elapsedTime
+
 
     particlesBackground.rotation.y = .1 * elapsedTime
 
@@ -357,8 +354,8 @@ function animate() {
     particlesBackground.rotation.y = mouseX * (elapsedTime * 0.00009)
 
     // Render
-    renderer.render(scene, camera)
-    // composer.render()
+    // renderer.render(scene, camera)
+    composer.render()
 
     //Update Tween
     TWEEN.update()
