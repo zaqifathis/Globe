@@ -9,7 +9,7 @@ import { update } from 'tween'
 import * as dat from 'dat.gui'
 
 
-let camera, scene, renderer, controls, composer, target, target2,
+let camera, scene, renderer, composer, target, target2,
     globeParticles, particlesBackground, geoCoord, guiLoc, cityLoc
 let mouseX = 0
 let mouseY = 0
@@ -21,6 +21,7 @@ const sizes = {
     height: window.innerHeight
 }
 
+var controls
 var center = new THREE.Vector3()
 var vectorStart = new THREE.Vector3()
 var vectorEnd = new THREE.Vector3(0, 0, globeRad)
@@ -132,9 +133,7 @@ function init() {
     scene.add(ptLight)
 
 
-    /*
-    Target Location
-    */
+    //Target Location
 
 
     const randGeo = new THREE.SphereBufferGeometry(0.005, 30, 30)
@@ -145,33 +144,6 @@ function init() {
     })
     target = new THREE.Mesh(randGeo, randGeoMat)
     scene.add(target)
-
-
-    //dat gui text input
-
-
-    const textLoc = {
-        location: "Type your location"
-    }
-
-    guiLoc = new dat.GUI()
-    guiLoc.add(textLoc, "location").onFinishChange(function (value) {
-        const citiesTemp = []
-        for (let i = 0; i < citiesName.length; i++) {
-            if (value == (citiesName[i]).toLowerCase()) {
-                cityLoc = getCoordinatesFromLatLng(latitudes[i], longitudes[i], globeRad)
-                citiesTemp.push(cityLoc)
-                console.log(citiesName[i], countryName[i], cityLoc)
-            }
-        }
-        target.position.x = citiesTemp[0].x
-        target.position.y = citiesTemp[0].y
-        target.position.z = citiesTemp[0].z
-
-        console.log(citiesTemp.length)
-        generateTarget()
-    })
-
 
 
     //Particles Background
@@ -223,11 +195,64 @@ function init() {
     // Controls
 
 
-    // const controls = new OrbitControls(camera, canvas)
-    // controls.enableDamping = true
-    // controls.autoRotate = true
-    // controls.autoRotateSpeed = 0.5
+    controls = new OrbitControls(camera, canvas)
+    controls.enableDamping = true
+    controls.autoRotate = true
+    controls.autoRotateSpeed = 0.8
+    controls.update()
 
+    document.addEventListener('keypress', function (ePress){
+        if (ePress.key === "Enter"){
+            controls.autoRotate = false
+            controls.update()
+            vectorEnd.copy(camera.position)
+            console.log(camera.position)        }
+        else {
+            controls.autoRotate = true
+        }
+    })
+
+
+    //dat gui text input
+
+    // const countriesName = require('./slim-2.json')
+    const textLoc = {
+        location: "Type your location"
+    }
+
+    guiLoc = new dat.GUI()
+    guiLoc.add(textLoc, "location").onFinishChange(function (value) {
+        // const citiesTemp = []
+        // for (let i = 0; i < citiesName.length; i++) {
+        //     if (value == (citiesName[i]).toLowerCase()) {
+        //         cityLoc = getCoordinatesFromLatLng(latitudes[i], longitudes[i], globeRad)
+        //         citiesTemp.push(cityLoc)
+        //         target.position.x = citiesTemp[0].x
+        //         target.position.y = citiesTemp[0].y
+        //         target.position.z = citiesTemp[0].z
+        
+        //         generateTarget()
+        //         console.log(citiesName[i], countryName[i], cityLoc)
+        //     }
+        // }
+        // console.log(citiesTemp.length)
+    })
+
+
+    function getCityCoordinate(cityName){
+        const citiesTemp = []
+        for (let i = 0; i < citiesName.length; i++) {
+            if (cityName == (citiesName[i]).toLowerCase()) {
+                cityLoc = getCoordinatesFromLatLng(latitudes[i], longitudes[i], globeRad)
+                citiesTemp.push(cityLoc)
+                target.position.x = citiesTemp[0].x
+                target.position.y = citiesTemp[0].y
+                target.position.z = citiesTemp[0].z
+        
+                generateTarget()
+                console.log(citiesName[i], countryName[i], cityLoc)
+            }
+    }
 
 
     //Mouse
@@ -238,11 +263,6 @@ function init() {
         mouseY = event.clientY
         mouseX = event.clientX
     }
-
-    //
-
-    // generateTarget()
-
 }
 
 
@@ -261,11 +281,6 @@ function getCoordinatesFromLatLng(latitude, longitude, radiusEarth) {
 
 
 function generateTarget() {
-
-    // const random = Math.floor(Math.random() * geoCoord.length)
-    // target.position.x = geoCoord[random].x
-    // target.position.y = geoCoord[random].y
-    // target.position.z = geoCoord[random].z
 
     //get Vector, Angle, Normal
     vectorStart = target.position
@@ -299,7 +314,7 @@ function generateTarget() {
         })
 
     var tweenZoomIn = new TWEEN.Tween(camera.position)
-        .to(targetCamPos, 3000)
+        .to(targetCamPos, 2000)
         .easing(TWEEN.Easing.Exponential.InOut)
 
     var tweenZoomOut = new TWEEN.Tween(camera.position)
@@ -317,7 +332,7 @@ function generateTarget() {
         })
 
     tween.chain(tweenZoomIn)
-    tweenZoomIn.chain(tweenZoomOut)
+    // tweenZoomIn.chain(tweenZoomOut)
     tween.start()
 }
 
@@ -359,6 +374,9 @@ function animate() {
 
     //Update Tween
     TWEEN.update()
+
+    //Update OrbitControls
+    controls.update()
 
     // Call tick again on the next frame
     window.requestAnimationFrame(animate)
