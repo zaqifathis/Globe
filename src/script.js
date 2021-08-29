@@ -33,7 +33,6 @@ var vectorStart = new THREE.Vector3()
 var vectorEnd = new THREE.Vector3()
 var normal = new THREE.Vector3()
 var camVec = new THREE.Vector3()
-var lookAt = new THREE.Vector3()
 var angle = { value: 0 }
 var angleEnd = { value: 0 }
 
