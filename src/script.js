@@ -24,6 +24,7 @@ const sizes = {
     width: window.innerWidth,
     height: window.innerHeight
 }
+const axios = require("axios")
 
 var nextCity
 var controls
@@ -195,6 +196,19 @@ function init() {
     window.addEventListener('resize', onWindowResize)
 
 
+    //dat gui text input
+
+
+    const textLoc = {
+        location: "Type your location"
+    }
+
+    guiLoc = new dat.GUI()
+    guiLoc.add(textLoc, "location").onFinishChange(function (value) {
+        nextCity = value
+    })
+
+
     // Controls
 
 
@@ -213,25 +227,11 @@ function init() {
             controls.autoRotate = false
             controls.update()
             vectorEnd.copy(camera.position)
-            getCityCoordinate(nextCity)
+            getLocation(nextCity)
         }
         else {
             controls.autoRotate = true
         }
-    })
-
-
-    //dat gui text input
-
-
-    // const countriesName = require('./slim-2.json')
-    const textLoc = {
-        location: "Type your location"
-    }
-
-    guiLoc = new dat.GUI()
-    guiLoc.add(textLoc, "location").onFinishChange(function (value) {
-        nextCity = value.slice()
     })
 
 
@@ -247,21 +247,25 @@ function init() {
 
 
 
-function getCityCoordinate(cityName) {
-    const citiesTemp = []
-    for (let i = 0; i < citiesName.length; i++) {
-        if (cityName == (citiesName[i]).toLowerCase()) {
-            cityLoc = getCoordinatesFromLatLng(latitudes[i], longitudes[i], globeRad)
-            citiesTemp.push(cityLoc)
-            target.position.x = citiesTemp[0].x
-            target.position.y = citiesTemp[0].y
-            target.position.z = citiesTemp[0].z
+function getLocation(city) {
+    axios.get('https://nominatim.openstreetmap.org/search/' + city + '?format=json&limit=1')
+        .then(response => {
+            console.log(response.data[0].display_name)
+            console.log(response.data[0].lat, response.data[0].lon)
+            const lat = response.data[0].lat
+            const lon = response.data[0].lon
+            cityLoc = getCoordinatesFromLatLng(lat, lon, globeRad)
+            target.position.x = cityLoc.x
+            target.position.y = cityLoc.y
+            target.position.z = cityLoc.z
 
             generateTarget()
-            console.log(citiesName[i], countryName[i], cityLoc)
-        }
-    }
+        })
+        .catch(error => {
+            console.log(error)
+        })
 }
+
 
 
 function getCoordinatesFromLatLng(latitude, longitude, radiusEarth) {
@@ -323,6 +327,9 @@ function generateTarget() {
             vectorCameraDirection.subVectors(camVec, center)
             vectorEnd.add(vectorCameraDirection.multiplyScalar(-.75))
             controls.autoRotate = true
+
+            target.position.x = 10
+            target.position.y = 10
         })
 
     tween.chain(tweenZoomIn)
