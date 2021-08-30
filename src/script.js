@@ -360,8 +360,8 @@ function animate() {
     // Update objects
     particlesBackground.rotation.y = .1 * elapsedTime
 
-    particlesBackground.rotation.x = mouseY * (elapsedTime * 0.00009)
-    particlesBackground.rotation.y = mouseX * (elapsedTime * 0.00009)
+    particlesBackground.rotation.x = mouseY * (elapsedTime * 0.00007)
+    particlesBackground.rotation.y = mouseX * (elapsedTime * 0.00007)
 
     // Render
     // renderer.render(scene, camera)
